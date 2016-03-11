@@ -1,0 +1,811 @@
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+	"Description" : "Challenge #2 - Infrastructure as Code",
+	"Parameters" :
+	{
+		"VMInstanceType": 
+		{
+           "Type" : "String",
+			"Default" : "t1.micro",
+			"Description" : "Enter t2.micro, t2.small,t2.medium, m3.medium ,c3.large,c3.2xlarge and etc. Default is t1.micro."
+        },
+		"AppVMInstanceType": 
+		{
+           "Type" : "String",
+			"Default" : "t2.micro",
+			"Description" : "Enter t2.micro, t2.small,t2.medium, m3.medium ,c3.large,c3.2xlarge and etc. Default is t1.micro."
+        },
+		"EmailID": 
+		{
+			"Description" : "Email Notification",
+			"Type": "String",
+			"MinLength": "1",
+			"MaxLength": "100",
+			"Default":"karthikeyan.us1@gmail.com"
+		},
+		"KeyName": 
+		{
+            "Default": "karthi28_oregon",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances. Default is OSItrafickp",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "255",
+            "AllowedPattern": "[\\x20-\\x7E]*",
+            "ConstraintDescription": "can contain only ASCII characters."
+        },
+		"WebServerPort": 
+		{  
+			"Description": "TCP/IP port of the web server",	          
+			"Type": "String",          
+			"Default": "8080"
+		},
+		"SSHLocation":
+		{
+			"Description": "The IP address range that can be used to SSH to the EC2 instances",
+			"Type": "String",
+			"MinLength": "9",
+			"MaxLength": "18",
+			"Default": "0.0.0.0/0",
+			"AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+		}
+	},
+	
+	"Resources" : 
+	{
+	
+
+	
+	
+	
+	
+		"ch2VPC" : 
+		{
+			"Type" : "AWS::EC2::VPC",
+			"Properties" : 
+			{
+				"CidrBlock" : "10.2.10.0/22",
+				"EnableDnsSupport" : "true",
+				"EnableDnsHostnames" : "true",
+				"InstanceTenancy" : "default",
+				"Tags" : 
+				[
+					{
+						"Key" : "Name", "Value" : "karthi_test"
+					}
+				]
+			}
+		},
+		"ch2VPCIGW" : 
+		{
+			"Type" : "AWS::EC2::InternetGateway",
+			"Properties" : 
+			{
+				"Tags" : [ {"Key" : "name", "Value" : "karthi_test"} ]
+			}
+		},
+		"AttachGateway" : 
+		{
+			"Type" : "AWS::EC2::VPCGatewayAttachment",
+			"Properties" : 
+			{
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"InternetGatewayId" : { "Ref" : "ch2VPCIGW" }
+			}
+		},
+
+		
+		
+		
+		
+		
+			
+"ch2subnetprivate" : 
+		{
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : 
+			{
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"CidrBlock" : "10.2.10.64/27",
+				"AvailabilityZone" : "us-west-2a",
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"ch2subnetprivateRTAssociation" : 
+		{
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2subnetprivate" },
+				"RouteTableId" : { "Ref" : "ch2subnetPrivateRT" }
+			}
+		},
+		"AclAssociationch2subnetprivate" : 
+		{
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2subnetprivate" },
+				"NetworkAclId" : { "Ref" : "ch2subnetACL" }
+			}
+		},
+		
+		
+		
+
+		
+		
+		
+		
+"ch2subnetprivateAZ2" : 
+		{
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : 
+			{
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"CidrBlock" : "10.2.11.64/27",
+				"AvailabilityZone" : "us-west-2b",
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"ch2subnetprivateRTAssociationAZ2" : 
+		{
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2subnetprivateAZ2" },
+				"RouteTableId" : { "Ref" : "ch2subnetPrivateRT" }
+			}
+		},
+		"AclAssociationch2subnetprivateAZ2" : 
+		{
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2subnetprivateAZ2" },
+				"NetworkAclId" : { "Ref" : "ch2subnetACL" }
+			}
+		},
+		
+		
+		
+		
+		
+		
+		
+		
+"ch2subnetprivateAZ3" : 
+		{
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : 
+			{
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"CidrBlock" : "10.2.9.64/27",
+				"AvailabilityZone" : "us-west-2c",
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"ch2subnetprivateRTAssociationAZ3" : 
+		{
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2subnetprivateAZ3" },
+				"RouteTableId" : { "Ref" : "ch2subnetPrivateRT" }
+			}
+		},
+		"AclAssociationch2subnetprivateAZ3" : 
+		{
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2subnetprivateAZ3" },
+				"NetworkAclId" : { "Ref" : "ch2subnetACL" }
+			}
+		},
+		
+		
+		
+		
+		
+		
+		"ch2subnetACL" : 
+		{
+			"Type" : "AWS::EC2::NetworkAcl",
+			"Properties" : 
+			{
+				"VpcId" : {"Ref" : "ch2VPC"},
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"Inboundch2subnetACLs1" : 
+		{
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : 
+			{
+				"NetworkAclId" : {"Ref" : "ch2subnetACL"},
+				"RuleNumber" : "101",
+				"Protocol" : "-1",
+				"RuleAction" : "allow",
+				"Egress" : "false",
+				"CidrBlock" : "10.2.10.0/22",
+				"Icmp" : { "Code" : "-1", "Type" : "-1" },
+				"PortRange" : {"From" : "0", "To" : "65535"}
+			}
+		},
+		"Inboundch2subnetAcl" : 
+		{
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : 
+			{
+				"NetworkAclId" : {"Ref" : "ch2subnetACL"},
+				"RuleNumber" : "102",
+				"Protocol" : "6",
+				"RuleAction" : "allow",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"PortRange" : {"From" : "0", "To" : "65535"}
+			}
+		},
+		"Outboundch2subnetsubnetAcl" : 
+		{
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : 
+			{
+				"NetworkAclId" : {"Ref" : "ch2subnetACL"},
+				"RuleNumber" : "100",
+				"Protocol" : "-1",
+				"RuleAction" : "allow",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : { "Code" : "-1", "Type" : "-1" },
+				"PortRange" : {"From" : "0", "To" : "65535"}
+			}
+		},
+		"ch2subnetPrivateRT" : 
+		{
+			"Type" : "AWS::EC2::RouteTable",
+			"Properties" : 
+			{
+				"VpcId" : {"Ref" : "ch2VPC"},
+				"Tags" : [ {"Key" : "name", "Value" : "karthi_test"} ]
+			}
+		},
+		"ch2subnetPrivateRTent" :{
+  "Type" : "AWS::EC2::Route",
+  "Properties" : {
+    "RouteTableId" : { "Ref" : "ch2subnetPrivateRT" },
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"InstanceId" : { "Ref" : "ch2VPCIGW" }
+  
+  }
+},
+
+		
+		
+		
+		
+		
+		
+			
+		
+"ch2VPCsubnetpublic" : 
+		{
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : 
+			{
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"AvailabilityZone" : "us-west-2a",
+				"CidrBlock" : "10.2.10.160/27",
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"AclAssociationch2VPCsubnetpublic" : 
+		{
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2VPCsubnetpublic"  },
+				"NetworkAclId" : { "Ref" : "ch2VPCsubnetACL" }
+			}
+		},
+		"ch2VPCpublicRTAssociation" : 
+		{
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2VPCsubnetpublic" },
+				"RouteTableId" : { "Ref" : "ch2VPCsubnetPublicRT" }
+			}
+		},
+		
+		
+
+		
+"ch2VPCsubnetpublicAZ2" : 
+		{
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : 
+			{
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"CidrBlock" : "10.2.11.160/27",
+				"AvailabilityZone" : "us-west-2b",
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"AclAssociationch2VPCsubnetpublicAZ2" : 
+		{
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2VPCsubnetpublicAZ2"  },
+				"NetworkAclId" : { "Ref" : "ch2VPCsubnetACL" }
+			}
+		},
+		"ch2VPCpublicRTAssociationAZ2" : 
+		{
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties" : 
+			{
+				"SubnetId" : { "Ref" : "ch2VPCsubnetpublicAZ2"  },
+				"RouteTableId" : { "Ref" : "ch2VPCsubnetPublicRT" }
+			}
+		},
+		
+		"ch2VPCsubnetACL" : 
+		{
+			"Type" : "AWS::EC2::NetworkAcl",
+			"Properties" : 
+			{
+				"VpcId" : {"Ref" : "ch2VPC"},
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ]
+			}
+		},
+		"Inboundch2VPCsubnetAcls1" : 
+		{
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : 
+			{
+				"NetworkAclId" : {"Ref" : "ch2VPCsubnetACL"},
+				"RuleNumber" : "101",
+				"Protocol" : "-1",
+				"RuleAction" : "allow",
+				"Egress" : "false",
+				"CidrBlock" : "10.2.10.0/22",
+				"Icmp" : { "Code" : "-1", "Type" : "-1" },
+				"PortRange" : {"From" : "0", "To" : "65535"}
+			}
+		},
+		"Inboundch2VPCsubnetAcl" : 
+		{
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : 
+			{
+				"NetworkAclId" : {"Ref" : "ch2VPCsubnetACL"},
+				"RuleNumber" : "102",
+				"Protocol" : "6",
+				"RuleAction" : "allow",
+				"Egress" : "false",
+				"CidrBlock" : "0.0.0.0/0",
+				"PortRange" : {"From" : "0", "To" : "65535"}
+			}
+		},	
+		"Outboundch2VPCsubnetAcl" : 
+		{
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" : 
+			{
+				"NetworkAclId" : {"Ref" : "ch2VPCsubnetACL"},
+				"RuleNumber" : "100",
+				"Protocol" : "-1",
+				"RuleAction" : "allow",
+				"Egress" : "true",
+				"CidrBlock" : "0.0.0.0/0",
+				"Icmp" : { "Code" : "-1", "Type" : "-1" },
+				"PortRange" : {"From" : "0", "To" : "65535"}
+			}
+		},
+		"ch2VPCsubnetPublicRT" : 
+		{
+			"Type" : "AWS::EC2::RouteTable",
+			"Properties" : 
+			{
+				"VpcId" : {"Ref" : "ch2VPC"},
+				"Tags" : [ {"Key" : "name", "Value" : "karthi_test"} ]
+			}
+		},
+		
+		
+		
+		
+		
+		
+		"AttachNATch2VPCapp" : 
+		{
+			"Type" : "AWS::EC2::Route",
+			"Properties" : 
+			{
+				
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"RouteTableId" : { "Ref" : "ch2VPCsubnetPublicRT" },
+				"GatewayId" : { "Ref" : "ch2VPCIGW" }
+			}
+		},
+		"natEIP":{
+		   "Type" : "AWS::EC2::EIP",
+		   "Properties" : {
+			  "InstanceId" : { "Ref" : "ch2VPCNATInstance"}
+		   }
+		},
+		"ch2VPCNATInstance": 
+		{
+            "Type": "AWS::EC2::Instance",
+            "Properties": 
+			{
+                "ImageId" : 
+				{
+					"Fn::FindInMap":["RegionMap",{"Ref":"AWS::Region"},"64"] 
+				},
+                "InstanceType": { "Ref" : "VMInstanceType"},
+                "SubnetId": { "Ref" : "ch2VPCsubnetpublicAZ2"},
+                "SecurityGroupIds" : [{ "Ref" : "NATVMSecurityGroups"}],
+				"SourceDestCheck" : "false",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "karthi_test"
+                    }
+                ]
+            }
+        },
+		"NATVMSecurityGroups" : 
+		{
+			"Type" : "AWS::EC2::SecurityGroup",
+			"Properties" : 
+			{
+				"Tags" : [ {"Key" : "Name", "Value" : "karthi_test"} ],
+				"GroupDescription" : "NATVMSecurityGroups",
+				"VpcId" : { "Ref" : "ch2VPC" },
+				"SecurityGroupIngress" : 
+				[
+				{
+					"IpProtocol" : "-1",
+					"FromPort" : "0",
+					"ToPort" : "65535",
+					"CidrIp" : "10.2.10.0/22"
+				}
+				],
+				"SecurityGroupEgress" : 
+				[{
+					"IpProtocol" : "-1",
+					"FromPort" : "0",
+					"ToPort" : "65535",
+					"CidrIp" : "0.0.0.0/0"
+				}]
+			}
+		},
+
+
+
+
+
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+			"InstanceSecurityGroup" : 
+				{
+					"Type" : "AWS::EC2::SecurityGroup",
+					
+					"Properties" : 
+					{
+						"GroupDescription" : "Allow windows stack instance to client host",
+						"VpcId" : { "Ref" : "ch2VPC" },
+						"SecurityGroupIngress" : 
+									[
+									{
+										"IpProtocol" : "tcp",
+									 "FromPort" : "22",	
+										"ToPort" : "22",
+									 "CidrIp" :{ "Ref":"SSHLocation"
+										}
+									},
+									{
+										"IpProtocol" : "tcp",
+									 "FromPort" : "80",	
+										"ToPort" : "80",
+									 "CidrIp":"0.0.0.0/0"
+										
+									},
+									{
+										"IpProtocol":"tcp",
+										"FromPort":{
+										"Ref":"WebServerPort"
+										},
+										"ToPort":{
+										"Ref":"WebServerPort"
+										},
+										"CidrIp":"0.0.0.0/0"
+							 
+									 }
+								],
+								"SecurityGroupEgress" : 
+								[{
+									"IpProtocol" : "-1",
+									"FromPort" : "0",
+									"ToPort" : "65535",
+									"CidrIp" : "0.0.0.0/0"
+								}]
+				
+					}
+				},
+				"InstanceProfilename":
+				{
+					"Type": "AWS::IAM::InstanceProfile",
+					"Properties": 
+					{
+						"Path": "/",
+						"Roles": [  { "Ref" : "RoleForS3" } ]
+					}
+				}, 
+				"RoleForS3":
+				{
+					"Type": "AWS::IAM::Role",
+					"Properties": 
+					{
+						"AssumeRolePolicyDocument":  
+						{
+							"Version" : "2012-10-17",
+							"Statement": [ 
+							{
+								"Effect": "Allow",
+								"Principal": 
+								{
+									"Service": [ "ec2.amazonaws.com" ]
+								},
+								"Action": [ "sts:AssumeRole" ]
+							} ]
+						},
+						"Path": "/",
+						"Policies": [ 
+						{  
+							"PolicyName" : "CFNUsers",
+							"PolicyDocument" : 
+							{
+								"Version": "2012-10-17",
+								"Statement": [
+								{
+									"Effect": "Allow",
+									"Action": "s3:*",
+									"Resource": "*"
+								}
+								]
+							} 
+						}]
+					}
+				},
+				    
+				"TomcatSG" : 
+				{
+					"Type" : "AWS::EC2::SecurityGroup",
+					"Properties" : 
+					{
+						"GroupDescription" : "TomcatSG",
+						 "VpcId" : { "Ref" : "ch2VPC" },
+						"SecurityGroupIngress" : [
+						{
+							"IpProtocol" : "tcp",
+							"FromPort" : "0",
+							"ToPort" : "65535",
+							"CidrIp" : "0.0.0.0/0"
+						}]
+					}
+				},
+
+				"ELBprofile" : 
+				{
+					"Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+					"Properties" : 
+					{
+						"Subnets" : 
+						[
+						{
+						"Ref" : "ch2VPCsubnetpublic",
+						"Ref" : "ch2VPCsubnetpublicAZ2" 
+						}
+						]
+						,
+						"Listeners" : [ 
+						{
+							"LoadBalancerPort" : "80",
+							"InstancePort" : "8080",
+							"Protocol" : "HTTP"
+						} ],
+						"CrossZone" : "True",
+						"SecurityGroups" : [{ "Ref" : "InstanceSecurityGroup" } ],
+						"HealthCheck" : 
+						{
+							"Target" : { "Fn::Join" : ["", [ "HTTP:8080/", "index.html" ] ] },
+							"HealthyThreshold" : "10",
+							"UnhealthyThreshold" : "5",
+							"Interval" : "30",
+							"Timeout" : "10"
+						}
+						
+					}
+				},
+
+				"AutoScalingGroup" : 
+				{
+					"Type" : "AWS::AutoScaling::AutoScalingGroup",
+					"Properties" : 
+					{
+						
+						"LaunchConfigurationName" : { "Ref" : "ApacheServerinstance" },
+						"MinSize" : "3",
+						"MaxSize" : "6",
+						"LoadBalancerNames" : [ { "Ref" : "ELBprofile" } ],
+						"VPCZoneIdentifier" :  
+						[ 
+						{ 
+						"Ref" : "ch2subnetprivate"
+						},
+						{ "Ref" : "ch2subnetprivateAZ2" },
+						{ "Ref" : "ch2subnetprivateAZ3" }
+						
+						]
+						
+					}
+				},
+
+				"ApacheServerinstance" : 
+				{
+					"Type" : "AWS::AutoScaling::LaunchConfiguration",
+					"Properties" : 
+					{
+						"KeyName" : { "Ref" : "KeyName" },
+						"ImageId" : { "Fn::FindInMap" : [ "RegionMapappserver",{ "Ref" : "AWS::Region" }, "64"] },
+						"IamInstanceProfile" :{ "Ref" : "InstanceProfilename" } ,
+						"UserData":
+						{
+							"Fn::Base64": 
+							{
+								"Fn::Join": [
+								"",
+								[   "#!/bin/bash -ex","\n",
+								"sudo su","\n",
+								"cd /root","\n",
+								"apt-get update && sudo apt-get -y install tomcat7","\n",
+								"service tomcat7 start","\n",
+								"sudo su","\n",
+								"cd /root","\n",
+								"\n"
+								]
+								]
+							}
+						},
+						"SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+						"InstanceType" :{"Ref": "AppVMInstanceType"}
+					}
+				},
+		
+
+				"WebServerScaleUpPolicy" : 
+				{
+					"Type" : "AWS::AutoScaling::ScalingPolicy",
+					"Properties" : 
+					{
+						"AdjustmentType" : "PercentChangeInCapacity",
+						"AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
+						"Cooldown" : "60",
+						"ScalingAdjustment" : "1"
+					}
+				},
+				"WebServerScaleDownPolicy" : 
+				{
+					"Type" : "AWS::AutoScaling::ScalingPolicy",
+					"Properties" : 
+					{
+						"AdjustmentType" : "PercentChangeInCapacity",
+						"AutoScalingGroupName" : { "Ref" : "AutoScalingGroup" },
+						"Cooldown" : "60",
+						"ScalingAdjustment" : "-1"
+					}
+				},
+
+				"MySNSTopic" : 
+				{
+					"Type" : "AWS::SNS::Topic",
+					"Properties" : 
+					{
+						"Subscription" : [ 
+						{
+							"Endpoint" : { "Ref": "EmailID" },
+							"Protocol" : "email"
+						} ]
+					}
+				},
+				"CPUAlarmHigh": 
+				{
+					"Type": "AWS::CloudWatch::Alarm",
+					"Properties": 
+					{
+						"AlarmDescription": "Scale-up if CPU > 20% for 1 minute",
+						"MetricName": "CPUUtilization",
+						"Namespace": "AWS/EC2",
+						"Statistic": "Average",
+						"Period": "300",
+						"EvaluationPeriods": "1",
+						"Threshold": "20",
+						"AlarmActions": [ { "Ref": "MySNSTopic" },{"Ref": "WebServerScaleUpPolicy" } ],
+						"Dimensions": [
+						{
+							"Name": "AutoScalingGroupName",
+							"Value": { "Ref": "AutoScalingGroup" }
+						}
+						],
+						"ComparisonOperator": "GreaterThanThreshold"
+					}
+				}, 
+
+				"CPUAlarmLow": 
+				{
+					"Type": "AWS::CloudWatch::Alarm",
+					"Properties": 
+					{
+						"AlarmDescription": "Scale-down if CPU < 10% for 1 minute",
+						"MetricName": "CPUUtilization",
+						"Namespace": "AWS/EC2",
+						"Statistic": "Average",
+						"Period": "300",
+						"EvaluationPeriods": "1",
+						"Threshold": "10",
+						"AlarmActions": [ { "Ref": "MySNSTopic" },{"Ref": "WebServerScaleDownPolicy" } ],
+						"Dimensions": [
+						{
+							"Name": "AutoScalingGroupName",
+							"Value": { "Ref": "AutoScalingGroup" }
+						}],
+						"ComparisonOperator": "LessThanThreshold"
+					}
+				}
+	
+		
+		
+		
+		
+	},
+	"Mappings":
+	{
+		"RegionMap":
+		{
+			"us-west-2":{"64":"ami-6d29b85d"}
+		},
+		"RegionMapappserver":
+		{
+			"us-west-2":{"64":"ami-9abea4fb"}
+		}
+	},
+	"Outputs" : 
+	{
+		"ApacheServer" : 
+		{
+			"Description" : "Public DNS name of the LoadBalancer append the string /warfile to check the open the file downloaded from s3",
+			"Value" : { "Fn::GetAtt" : [ "ELBprofile", "DNSName" ] }
+		}
+	}
+}
