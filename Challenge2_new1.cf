@@ -276,7 +276,7 @@
   "Properties" : {
     "RouteTableId" : { "Ref" : "ch2subnetPrivateRT" },
 				"DestinationCidrBlock" : "0.0.0.0/0",
-				"InstanceId" : { "Ref" : "ch2VPCIGW" }
+				"InstanceId" : { "Ref" : "ch2VPCNATInstance" }
   
   }
 },
@@ -434,7 +434,8 @@
 		"natEIP":{
 		   "Type" : "AWS::EC2::EIP",
 		   "Properties" : {
-			  "InstanceId" : { "Ref" : "ch2VPCNATInstance"}
+			  "InstanceId" : { "Ref" : "ch2VPCNATInstance"},
+			  "Domain" :  "vpc"
 		   }
 		},
 		"ch2VPCNATInstance": 
